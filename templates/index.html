@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF to Speech</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script>
+        function playAudio() {
+            let audio = document.getElementById('audio');
+            if (audio.paused) {
+                audio.play();
+            } else {
+                audio.pause();
+            }
+        }
+
+        function restartAudio() {
+            let audio = document.getElementById('audio');
+            audio.currentTime = 0;
+            audio.play();
+            fetch("/restart");
+        }
+
+        function loadNew() {
+            window.location.href = "/load_new";
+        }
+
+        function handleFileUpload(event) {
+            event.preventDefault();
+            let formData = new FormData(event.target);
+
+            fetch("/", {
+                method: "POST",
+                body: formData,
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert(data.error);
+                } else {
+                    document.getElementById('audio-source').src = data.audio_url;
+                    document.getElementById('audio').load();
+                    playAudio();
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+    </script>
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center">Upload PDF and Convert to Speech</h1>
+        <form onsubmit="handleFileUpload(event)" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="file">Choose PDF File</label>
+                <input type="file" class="form-control" id="file" name="file" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Upload and Convert</button>
+        </form>
+        <audio id="audio" controls class="mt-3">
+            <source id="audio-source" src="" type="audio/mpeg">
+            Your browser does not support the audio element.
+        </audio>
+        <div class="mt-2">
+            <button class="btn btn-secondary" onclick="playAudio()">Play / Pause</button>
+            <button class="btn btn-secondary" onclick="restartAudio()">Restart</button>
+            <button class="btn btn-secondary" onclick="loadNew()">Load New</button>
+        </div>
+    </div>
+</body>
+</html>
